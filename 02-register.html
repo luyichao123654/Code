@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>表单注册</title>
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+			background-color: #F7F7F7;
+		}
+
+		ul {
+			margin: 0;
+			padding: 50px;
+			list-style: none;
+		}
+
+		.register {
+			width: 800px;
+			margin: 50px auto;
+			background-color: #FFF;
+			border: 1px solid #CCC;
+			border-radius: 5px;
+		}
+
+		li {
+			display: flex;
+			margin: 20px 0;
+		}
+
+		label,
+		input {
+			display: block;
+			float: left;
+			height: 46px;
+			font-size: 24px;
+			box-sizing: border-box;
+			color: #333;
+		}
+
+		label {
+			width: 200px;
+			line-height: 46px;
+			margin-right: 30px;
+			text-align: right;
+		}
+
+		input {
+			width: 320px;
+			padding: 8px;
+			line-height: 1;
+			outline: none;
+			position: relative;
+		}
+
+		input.code {
+			width: 120px;
+		}
+
+		input.verify {
+			width: 190px;
+			margin-left: 10px;
+		}
+
+		input.disabled {
+			background-color: #CCC !important;
+		}
+
+		input[type=button] {
+			border: none;
+			color: #FFF;
+			background-color: #E64145;
+			border-radius: 4px;
+			cursor: pointer;
+		}
+
+		.tips {
+			position: fixed;
+			top: 0;
+			width: 100%;
+			height: 40px;
+			text-align: center;
+		}
+
+		.tips p {
+			min-width: 300px;
+			max-width: 400px;
+			line-height: 40px;
+			margin: 0 auto;
+			color: #FFF;
+			display: none;
+			background-color: #C91623;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="register">
+		<form id="ajaxForm">
+			<ul>
+				<li>
+					<label for="">用户名</label>
+					<input type="text" name="name" class="name">
+				</li>
+				<li>
+					<label for="">请设置密码</label>
+					<input type="password" name="pass" class="pass">
+				</li>
+				<li>
+					<label for="">请确认密码</label>
+					<input type="password" name="repass" class="repass">
+				</li>
+				<li>
+					<label for="">验证手机</label>
+					<input type="text" value="13012345678" name="mobile" class="mobile">
+				</li>
+				<li>
+					<label for="">短信验证码</label>
+					<input type="text" name="code" class="code">
+					<input type="button"  value="获取验证码" class="verify">
+				</li>
+				<li>
+					<label for=""></label>
+					<input type="button" class="submit " value="立即注册">
+				</li>  
+			</ul>
+		</form>
+	</div>
+	<!-- 提示信息 -->
+	<div class="tips">
+		<p>用户名不能为空---</p>
+	</div>
+	<script src="./jquery-1.12.2.js"></script>
+    <script>
+        $('.verify').on('click',function(){
+            // 获取mobile 的值
+            if($(this).hasClass('disabled')){
+                return
+            }
+            var phone =$('.mobile').val();
+            $.ajax({
+                type:'get',
+                url:'./serve/getCode.php',
+                data:{
+                    mobile:phone
+                },
+                beforeSend:function(){
+                    // 正则验证手机号码
+                    if(/^(13[0-9]|14[57]|15[0-35-9]|17[0-3]18[0-35-9])\d{8}$/.test(phone)==false){
+                        $('.tips p').fadeIn(500).delay(2000).fadeOut(500).text('手机号码不合法');
+                        return false
+                    };
+                    $('.verify').addClass('disabled');
+                    var num =6
+                    var timeid =setInterval(function(){
+                        num--;
+                        $('.verify').val(num+'秒后重新获取');
+                        if(num==0){
+                            clearInterval(timeid);
+                            $('.verify').removeClass('disabled').val('获取验证码')
+                        }
+                    },1000);  
+                },
+                success:function(res){
+
+                }
+            })
+        })
+
+        // 验证用户名
+        $('.name').on('blur',function(){
+            var username=$(this).val()
+            $.ajax({
+                type:'get',
+                url:'./serve/validateUsername.php',
+                data:{
+                    name:username
+                },
+                beforeSend:function(){
+                    if(username.trim()==''){
+                        $('.tips p').fadeIn(500).delay(2000).fadeOut(500).text('用户名不能为空')
+                        return fal··se
+                    }
+                },
+                dataType:'json',
+                success:function(res){
+                    if(res.code==0){
+                        $('.tips p').fadeIn(500).delay(2000).fadeOut(500).text(res.msg)
+                    }else{
+                        $('.tips p').fadeIn(500).delay(2000).fadeOut(500).text(res.msg)
+                    }
+
+                }
+                
+                
+            })
+        })
+
+    </script>
+</body>
+
+</html>
